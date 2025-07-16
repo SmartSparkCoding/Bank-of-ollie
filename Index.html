@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bank of Ollie</title>
+  <style>
+    /* debug background so you KNOW this CSS is loaded (will be overridden immediately) */
+    body { background: yellow; }
+
+    /* reset & base */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(to right, #dfe9f3, #ffffff);
+      color: #333;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+    header {
+      background-color: #1e272e;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* containers */
+    .container {
+      max-width: 500px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      display: none;     /* hide by default */
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .container.active {
+      display: block !important;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* headings */
+    h2, h3 { margin-bottom: 1rem; color: #2f3542; }
+
+    /* form elements */
+    input[type="password"] {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      background-color: #2ed573;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+    button:hover { background-color: #20bf6b; }
+
+    /* error */
+    #error-msg {
+      color: red;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    /* dashboard */
+    .balance-box {
+      background-color: #f1f2f6;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      text-align: center;
+      color: #1e272e;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 1rem;
+    }
+    ul li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+      font-size: 1rem;
+      color: #57606f;
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-top: 2rem;
+      gap: 0.5rem;
+    }
+    .option-btn {
+      flex: 1;
+      background: #f1f2f6;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 0.8rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #2f3542;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .option-btn:hover {
+      background: #dfe4ea;
+      color: #1e90ff;
+    }
+  </style>
+</head>
+<body>
+  <header>🏛️ Bank of Ollie</header>
+
+  <!-- login screen -->
+  <div class="container active" id="login-section">
+    <h2>🔐 Enter your secure PIN</h2>
+    <input type="password" id="pin-input" placeholder="Enter PIN" />
+    <button id="login-btn">Login</button>
+    <p id="error-msg">❌ Incorrect PIN. Try again.</p>
+  </div>
+
+  <!-- dashboard screen -->
+  <div class="container" id="dashboard">
+    <h2>👋 Welcome to Bank of Ollie</h2>
+    <div class="balance-box">
+      💷 Current Balance<br><strong>£72.50</strong>
+    </div>
+    <h3>📜 Recent Activity</h3>
+    <ul>
+      <li>+ £10.00 – Birthday Gift</li>
+      <li>- £3.50 – Sweets</li>
+      <li>- £2.00 – Robux</li>
+    </ul>
+    <div class="options">
+      <button class="option-btn">💰 Request Money</button>
+      <button class="option-btn">🎮 Buy Robux</button>
+      <button class="option-btn">⚙️ Settings</button>
+    </div>
+  </div>
+
+  <script>
+    console.log("SCRIPT STARTING");
+    const loginSection = document.getElementById("login-section");
+    const dashboard    = document.getElementById("dashboard");
+    const pinInput     = document.getElementById("pin-input");
+    const errorMsg     = document.getElementById("error-msg");
+    const loginBtn     = document.getElementById("login-btn");
+
+    loginBtn.addEventListener("click", () => {
+      console.log("Button clicked, value=", pinInput.value);
+      if (pinInput.value === "150217") {
+        loginSection.classList.remove("active");
+        dashboard.classList.add("active");
+        errorMsg.style.display = "none";
+      } else {
+        errorMsg.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
