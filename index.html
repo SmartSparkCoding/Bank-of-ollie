@@ -58,6 +58,7 @@
       opacity: 1;
       transform: translateY(0);
     }
+
     h2, h3 { margin-bottom: 1rem; color: #2f3542; }
     input[type="password"],
     input[type="number"],
@@ -88,6 +89,7 @@
       font-size: 0.9rem;
       display: none;
     }
+
     .balance-box {
       background-color: #f1f2f6;
       padding: 1.5rem;
@@ -127,7 +129,7 @@
       color: #1e90ff;
     }
 
-    /* Modal common */
+    /* Modal base */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -154,10 +156,10 @@
       font-size: 1.2rem; cursor: pointer;
     }
 
-    /* Request Money modal specific */
+    /* Request popup */
     #request-modal .modal-content button { width: auto; }
 
-    /* Settings modal specific */
+    /* Settings popup */
     #settings-modal .modal-content button,
     #settings-modal .modal-content a {
       width: 100%;
@@ -218,7 +220,7 @@
     <div class="options">
       <button class="option-btn" id="request-btn">💰 Request Money</button>
       <button class="option-btn" id="settings-btn">⚙️ Settings</button>
-      <button class="option-btn">🎮 Buy Stuff</button>
+      <button class="option-btn" id="buy-btn">🎮 Buy Stuff</button>
     </div>
   </div>
 
@@ -258,6 +260,7 @@
   </div>
 
   <script>
+    // ELEMENTS
     const loginSection = document.getElementById("login-section");
     const dashboard    = document.getElementById("dashboard");
     const pinInput     = document.getElementById("pin-input");
@@ -278,7 +281,9 @@
     const cardDetailsView = document.getElementById("card-details-view");
     const cardBackBtn = document.getElementById("card-back-btn");
 
-    // LOGIN
+    const buyBtn = document.getElementById("buy-btn");
+
+    // LOGIN HANDLERS
     loginBtn.addEventListener("click", () => {
       if (pinInput.value === "150217") {
         loginSection.classList.remove("active");
@@ -335,11 +340,22 @@
       cardDetailsView.style.display = "none";
     });
 
-    // Close modals when clicking outside content
+    // BUY STUFF BUTTON
+    buyBtn.addEventListener("click", () => {
+      window.open(
+        "https://docs.google.com/document/d/1zijwDX4CBFocnvhz2ZYbU4O2TAUqWkPI_xZkrWRMHNE/edit?tab=t.0",
+        "_blank"
+      );
+    });
+
+    // CLICK OUTSIDE TO CLOSE MODALS
     document.addEventListener("click", e => {
       [requestModal, settingsModal].forEach(modal => {
-        if (modal.style.display === "flex" && !modal.querySelector(".modal-content").contains(e.target) &&
-            ![requestBtn, settingsBtn].includes(e.target)) {
+        if (
+          modal.style.display === "flex" &&
+          !modal.querySelector(".modal-content").contains(e.target) &&
+          ![requestBtn, settingsBtn].includes(e.target)
+        ) {
           modal.style.display = "none";
         }
       });
