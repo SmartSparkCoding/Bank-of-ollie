@@ -24,7 +24,6 @@
       font-weight: 600;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    /* Sign-out button */
     #signout-btn {
       position: absolute;
       right: 1rem;
@@ -40,9 +39,7 @@
       display: none;
       transition: background 0.3s;
     }
-    #signout-btn:hover {
-      background: #e84118;
-    }
+    #signout-btn:hover { background: #e84118; }
 
     .container {
       max-width: 500px;
@@ -61,9 +58,7 @@
       opacity: 1;
       transform: translateY(0);
     }
-
     h2, h3 { margin-bottom: 1rem; color: #2f3542; }
-
     input[type="password"],
     input[type="number"],
     input[type="text"] {
@@ -87,14 +82,12 @@
       transition: background 0.3s ease;
     }
     button:hover { background-color: #20bf6b; }
-
     #error-msg {
       color: red;
       margin-top: 0.5rem;
       font-size: 0.9rem;
       display: none;
     }
-
     .balance-box {
       background-color: #f1f2f6;
       padding: 1.5rem;
@@ -112,13 +105,10 @@
       font-size: 1rem;
       color: #57606f;
     }
-
     .options {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      margin-top: 2rem;
       gap: 0.5rem;
+      margin-top: 2rem;
     }
     .option-btn {
       flex: 1;
@@ -131,45 +121,14 @@
       color: #2f3542;
       cursor: pointer;
       transition: all 0.3s ease;
-      position: relative;
     }
     .option-btn:hover {
       background: #dfe4ea;
       color: #1e90ff;
     }
 
-    /* Settings dropdown menu */
-    #settings-menu {
-      position: absolute;
-      top: 130%;
-      right: 1rem;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      display: none;
-      z-index: 1000;
-    }
-    #settings-menu button,
-    #settings-menu a {
-      display: block;
-      width: 100%;
-      padding: 0.75rem 1rem;
-      background: none;
-      border: none;
-      text-align: left;
-      cursor: pointer;
-      font-size: 0.95rem;
-      color: #2f3542;
-      text-decoration: none;
-    }
-    #settings-menu button:hover,
-    #settings-menu a:hover {
-      background: #f1f2f6;
-    }
-
-    /* Modal for Request Money */
-    #request-modal {
+    /* Modal common */
+    .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.5);
@@ -178,29 +137,55 @@
       justify-content: center;
       z-index: 2000;
     }
-    #request-modal .modal-content {
+    .modal-content {
       background: white;
       padding: 2rem;
       border-radius: 10px;
       width: 90%;
       max-width: 400px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      position: relative;
     }
-    #request-modal .modal-content h3 {
-      margin-bottom: 1rem;
-    }
-    #request-modal .modal-content button {
-      width: auto;
-      margin-top: 1rem;
-    }
-    #request-modal .modal-close {
+    .modal-content h3 { margin-bottom: 1rem; }
+    .modal-close {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: none;
+      top: 1rem; right: 1rem;
+      background: none; border: none;
+      font-size: 1.2rem; cursor: pointer;
+    }
+
+    /* Request Money modal specific */
+    #request-modal .modal-content button { width: auto; }
+
+    /* Settings modal specific */
+    #settings-modal .modal-content button,
+    #settings-modal .modal-content a {
+      width: 100%;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+      background: #f1f2f6;
+      color: #2f3542;
       border: none;
-      font-size: 1.2rem;
+      padding: 0.75rem;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background 0.3s;
+    }
+    #settings-modal .modal-content button:hover,
+    #settings-modal .modal-content a:hover {
+      background: #dfe4ea;
+      color: #1e90ff;
+    }
+    #card-details {
+      margin-top: 1rem;
+      line-height: 1.5;
+      color: #1e272e;
+    }
+    #card-back-btn {
+      margin-top: 1.5rem;
+      width: auto;
     }
   </style>
 </head>
@@ -210,7 +195,7 @@
     <button id="signout-btn">Sign Out</button>
   </header>
 
-  <!-- login screen -->
+  <!-- login -->
   <div class="container active" id="login-section">
     <h2>🔐 Enter your secure PIN</h2>
     <input type="password" id="pin-input" placeholder="Enter PIN" />
@@ -218,37 +203,27 @@
     <p id="error-msg">❌ Incorrect PIN. Try again.</p>
   </div>
 
-  <!-- dashboard screen -->
+  <!-- dashboard -->
   <div class="container" id="dashboard">
     <h2>👋 Welcome to Bank of Ollie</h2>
     <div class="balance-box">
       💷 Current Balance<br><strong>£4.72</strong>
     </div>
-
     <h3>📜 Recent Activity</h3>
     <ul>
       <li>+ £5.00 – Jacob Chores</li>
       <li>- £0.13 – 6 Sheets of A4</li>
       <li>- £0.01 – Rent of 6 Pegs</li>
     </ul>
-
     <div class="options">
       <button class="option-btn" id="request-btn">💰 Request Money</button>
       <button class="option-btn" id="settings-btn">⚙️ Settings</button>
       <button class="option-btn">🎮 Buy Stuff</button>
     </div>
-
-    <!-- Settings dropdown -->
-    <div id="settings-menu">
-      <button id="card-details-btn">Card Details</button>
-      <a href="mailto:jacob.navaratne+bankofollie@outlook.com?subject=Bank%20Of%20Ollie%20-%20Message%20from%20Customer">
-        Contact BOBBY
-      </a>
-    </div>
   </div>
 
-  <!-- Request Money modal -->
-  <div id="request-modal">
+  <!-- Request Money Modal -->
+  <div class="modal-overlay" id="request-modal">
     <div class="modal-content">
       <button class="modal-close">&times;</button>
       <h3>Request Money</h3>
@@ -258,22 +233,52 @@
     </div>
   </div>
 
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <div id="settings-menu-view">
+        <h3>Settings</h3>
+        <button id="card-details-btn">Card Details</button>
+        <a href="mailto:jacob.navaratne+bankofollie@outlook.com?subject=Bank%20Of%20Ollie%20-%20Message%20from%20Customer">
+          Contact BOBBY
+        </a>
+      </div>
+      <div id="card-details-view" style="display:none;">
+        <h3>Your Card Details</h3>
+        <div id="card-details">
+          <strong>Card Number:</strong> 2302 1502 2905 1105<br>
+          <strong>Expiry:</strong> 09/2032<br>
+          <strong>CVV:</strong> 152<br>
+          <strong>Account Number:</strong> 15217829
+        </div>
+        <button id="card-back-btn">← Back to Settings</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    console.log("SCRIPT STARTING");
     const loginSection = document.getElementById("login-section");
     const dashboard    = document.getElementById("dashboard");
     const pinInput     = document.getElementById("pin-input");
     const errorMsg     = document.getElementById("error-msg");
     const loginBtn     = document.getElementById("login-btn");
     const signoutBtn   = document.getElementById("signout-btn");
-    const settingsBtn  = document.getElementById("settings-btn");
-    const settingsMenu = document.getElementById("settings-menu");
+
     const requestBtn   = document.getElementById("request-btn");
     const requestModal = document.getElementById("request-modal");
-    const modalClose   = document.querySelector(".modal-close");
+    const reqClose     = requestModal.querySelector(".modal-close");
     const reqSendBtn   = document.getElementById("req-send-btn");
 
-    // Login
+    const settingsBtn   = document.getElementById("settings-btn");
+    const settingsModal = document.getElementById("settings-modal");
+    const settingsClose = settingsModal.querySelector(".modal-close");
+    const cardDetailsBtn = document.getElementById("card-details-btn");
+    const settingsMenuView = document.getElementById("settings-menu-view");
+    const cardDetailsView = document.getElementById("card-details-view");
+    const cardBackBtn = document.getElementById("card-back-btn");
+
+    // LOGIN
     loginBtn.addEventListener("click", () => {
       if (pinInput.value === "150217") {
         loginSection.classList.remove("active");
@@ -285,34 +290,19 @@
         errorMsg.style.display = "block";
       }
     });
-
-    // Sign out
     signoutBtn.addEventListener("click", () => {
       dashboard.classList.remove("active");
       loginSection.classList.add("active");
       signoutBtn.style.display = "none";
     });
 
-    // Settings menu toggle
-    settingsBtn.addEventListener("click", () => {
-      settingsMenu.style.display = settingsMenu.style.display === "block" ? "none" : "block";
-    });
-    // Hide settings menu when clicking outside
-    document.addEventListener("click", (e) => {
-      if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) {
-        settingsMenu.style.display = "none";
-      }
-    });
-
-    // Request Money modal
+    // REQUEST MONEY MODAL
     requestBtn.addEventListener("click", () => {
       requestModal.style.display = "flex";
     });
-    modalClose.addEventListener("click", () => {
+    reqClose.addEventListener("click", () => {
       requestModal.style.display = "none";
     });
-
-    // Send Request Email
     reqSendBtn.addEventListener("click", () => {
       const amt = document.getElementById("req-amount").value;
       const dest = document.getElementById("req-destination").value;
@@ -325,6 +315,34 @@
       );
       window.location.href = `mailto:jacob.navaratne+bankofollie@outlook.com?subject=${subject}&body=${body}`;
       requestModal.style.display = "none";
+    });
+
+    // SETTINGS MODAL
+    settingsBtn.addEventListener("click", () => {
+      settingsMenuView.style.display = "block";
+      cardDetailsView.style.display = "none";
+      settingsModal.style.display = "flex";
+    });
+    settingsClose.addEventListener("click", () => {
+      settingsModal.style.display = "none";
+    });
+    cardDetailsBtn.addEventListener("click", () => {
+      settingsMenuView.style.display = "none";
+      cardDetailsView.style.display = "block";
+    });
+    cardBackBtn.addEventListener("click", () => {
+      settingsMenuView.style.display = "block";
+      cardDetailsView.style.display = "none";
+    });
+
+    // Close modals when clicking outside content
+    document.addEventListener("click", e => {
+      [requestModal, settingsModal].forEach(modal => {
+        if (modal.style.display === "flex" && !modal.querySelector(".modal-content").contains(e.target) &&
+            ![requestBtn, settingsBtn].includes(e.target)) {
+          modal.style.display = "none";
+        }
+      });
     });
   </script>
 </body>
