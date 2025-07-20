@@ -57,76 +57,89 @@
   <!-- Existing modals unchanged -->
 
   <script>
-    // Initialize Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
-      authDomain: "sterlo-kids-banking.firebaseapp.com",
-      projectId: "sterlo-kids-banking",
-      storageBucket: "sterlo-kids-banking.firebasestorage.app",
-      messagingSenderId: "39217932124",
-      appId: "1:39217932124:web:7d612941b31ceca74a8399",
-      databaseURL: "https://sterlo-kids-banking-default-rtdb.europe-west1.firebasedatabase.app/"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    window.onload = () => {
+      // Initialize Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
+        authDomain: "sterlo-kids-banking.firebaseapp.com",
+        projectId: "sterlo-kids-banking",
+        storageBucket: "sterlo-kids-banking.firebasestorage.app",
+        messagingSenderId: "39217932124",
+        appId: "1:39217932124:web:7d612941b31ceca74a8399",
+        databaseURL: "https://sterlo-kids-banking-default-rtdb.europe-west1.firebasedatabase.app/"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
 
-    // Elements
-    const loginSection = document.getElementById('login-section');
-    const dashboard = document.getElementById('dashboard');
-    const nameInput = document.getElementById('name-input');
-    const pinInput = document.getElementById('pin-input');
-    const errorMsg = document.getElementById('error-msg');
-    const loginBtn = document.getElementById('login-btn');
-    const signoutBtn = document.getElementById('signout-btn');
-    const welcomeMsg = document.getElementById('welcome-msg');
-    const balanceBox = document.getElementById('balance-box');
-    const activityList = document.getElementById('activity-list');
+      // Elements
+      const loginSection = document.getElementById('login-section');
+      const dashboard = document.getElementById('dashboard');
+      const nameInput = document.getElementById('name-input');
+      const pinInput = document.getElementById('pin-input');
+      const errorMsg = document.getElementById('error-msg');
+      const loginBtn = document.getElementById('login-btn');
+      const signoutBtn = document.getElementById('signout-btn');
+      const welcomeMsg = document.getElementById('welcome-msg');
+      const balanceBox = document.getElementById('balance-box');
+      const activityList = document.getElementById('activity-list');
 
-    loginBtn.addEventListener('click', () => {
-      const name = nameInput.value.trim().toLowerCase();
-      const pin = pinInput.value.trim();
-      if (!name || !pin) return;
-      db.ref('accounts/' + name).once('value')
-        .then(snapshot => {
-          const data = snapshot.val();
-          if (!data || data['child-passcode'] !== pin) {
+      // Debug
+      console.log('Firebase initialized, waiting for login');
+
+      loginBtn.addEventListener('click', () => {
+        console.log('Login clicked');
+        const name = nameInput.value.trim().toLowerCase();
+        const pin = pinInput.value.trim();
+        console.log('Name:', name, 'PIN:', pin);
+        if (!name || !pin) {
+          console.log('Missing credentials');
+          return;
+        }
+        db.ref('accounts/' + name).once('value')
+          .then(snapshot => {
+            const data = snapshot.val();
+            console.log('Snapshot data:', data);
+            if (!data || data['child-passcode'] !== pin) {
+              console.log('Invalid credentials');
+              errorMsg.style.display = 'block';
+              return;
+            }
+            console.log('Login successful');
+            errorMsg.style.display = 'none';
+            loginSection.classList.remove('active');
+            dashboard.classList.add('active');
+            signoutBtn.style.display = 'block';
+
+            welcomeMsg.textContent = `👋 Welcome ${data['child-name']} to Sterlo`;
+            let balance = 0;
+            activityList.innerHTML = '';
+            const txns = data['child-transactions'] || [];
+            txns.forEach(tx => {
+              const li = document.createElement('li');
+              const amt = (tx.type === 'add' ? 1 : -1) * parseFloat(tx.amount);
+              balance += amt;
+              li.textContent = `${tx.type === 'add' ? '+' : '-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
+              activityList.appendChild(li);
+            });
+            balanceBox.innerHTML = `💷 Current Balance<br><strong>£${balance.toFixed(2)}</strong>`;
+          })
+          .catch(err => {
+            console.error('Firebase fetch error:', err);
             errorMsg.style.display = 'block';
-            return;
-          }
-          // Success
-          errorMsg.style.display = 'none';
-          loginSection.classList.remove('active');
-          dashboard.classList.add('active');
-          signoutBtn.style.display = 'block';
-          welcomeMsg.textContent = `👋 Welcome ${data['child-name']} to Sterlo`;
-          // Build transactions
-          let balance = 0;
-          activityList.innerHTML = '';
-          const txns = data['child-transactions'] || [];
-          txns.forEach(tx => {
-            const li = document.createElement('li');
-            const amt = (tx.type === 'add' ? 1 : -1) * parseFloat(tx.amount);
-            balance += amt;
-            li.textContent = `${tx.type === 'add' ? '+' : '-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
-            activityList.appendChild(li);
           });
-          balanceBox.innerHTML = `💷 Current Balance<br><strong>£${balance.toFixed(2)}</strong>`;
-        })
-        .catch(err => {
-          console.error(err);
-          errorMsg.style.display = 'block';
-        });
-    });
+      });
 
-    signoutBtn.addEventListener('click', () => {
-      dashboard.classList.remove('active');
-      loginSection.classList.add('active');
-      signoutBtn.style.display = 'none';
-      nameInput.value = '';
-      pinInput.value = '';
-      activityList.innerHTML = '';
-      balanceBox.innerHTML = '💷 Current Balance<br><strong>£0.00</strong>';
-    });
+      signoutBtn.addEventListener('click', () => {
+        console.log('Signing out');
+        dashboard.classList.remove('active');
+        loginSection.classList.add('active');
+        signoutBtn.style.display = 'none';
+        nameInput.value = '';
+        pinInput.value = '';
+        activityList.innerHTML = '';
+        balanceBox.innerHTML = '💷 Current Balance<br><strong>£0.00</strong>';
+      });
+    };
   </script>
 </body>
 </html>
