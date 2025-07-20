@@ -3,52 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sterlo</title>
+  <title>Sterlo Firebase Test</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: linear-gradient(to right, #dfe9f3, #ffffff); color: #333; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
-    header { background-color: #1e272e; color: white; padding: 1rem; display: flex; align-items: center; justify-content: center; position: relative; font-size: 1.8rem; font-weight: 600; }
-    #signout-btn { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: #ff4757; border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; display: none; }
-    .container { max-width: 500px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; }
-    .container.active { display: block !important; opacity: 1; transform: translateY(0); }
-    input { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
-    button { width: 100%; padding: 0.8rem; font-size: 1rem; background-color: #2ed573; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: 600; }
-    #error-msg { color: red; margin-top: 0.5rem; font-size: 0.9rem; display: none; text-align: center; }
-    .balance-box { background-color: #f1f2f6; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center; }
-    ul { list-style: none; padding: 0; margin-top: 1rem; }
-    ul li { padding: 0.75rem 0; border-bottom: 1px solid #eee; }
-    .options { display: flex; gap: 0.5rem; margin-top: 2rem; }
-    .option-btn { flex: 1; background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 0.8rem; }
+    body { font-family: Arial, sans-serif; padding: 2rem; background: #f4f6fb; }
+    h1 { color: #333; }
+    pre { background: #eee; padding: 1rem; border-radius: 6px; overflow: auto; }
   </style>
   <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
-  <header>🏛️ Sterlo Banking<button id="signout-btn">Sign Out</button></header>
-
-  <div class="container active" id="login-section">
-    <h2>🔐 Login to Sterlo</h2>
-    <input type="text" id="name-input" placeholder="Enter your name" />
-    <input type="password" id="pin-input" placeholder="Enter PIN" />
-    <button id="login-btn">Login</button>
-    <p id="error-msg">❌ Invalid name or PIN.</p>
-  </div>
-
-  <div class="container" id="dashboard">
-    <h2 id="welcome-msg">👋 Welcome to Sterlo</h2>
-    <div class="balance-box" id="balance-box">💷 Current Balance<br><strong>£0.00</strong></div>
-    <h3>📜 Recent Activity</h3>
-    <ul id="activity-list"></ul>
-    <div class="options">
-      <button class="option-btn" id="request-btn">💰 Request Money</button>
-      <button class="option-btn" id="settings-btn">⚙️ Settings</button>
-      <button class="option-btn" id="buy-btn">🎮 Buy Stuff</button>
-    </div>
-  </div>
+  <h1>Sterlo Firebase Data Test</h1>
+  <p>If configured correctly, JSON data from Firebase will appear below:</p>
+  <pre id="output">Loading data...</pre>
 
   <script>
-    // Initialize Firebase
+    // 1. Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
       authDomain: "sterlo-kids-banking.firebaseapp.com",
@@ -61,60 +32,17 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const loginSection = document.getElementById('login-section');
-    const dashboard = document.getElementById('dashboard');
-    const nameInput = document.getElementById('name-input');
-    const pinInput = document.getElementById('pin-input');
-    const errorMsg = document.getElementById('error-msg');
-    const loginBtn = document.getElementById('login-btn');
-    const signoutBtn = document.getElementById('signout-btn');
-    const welcomeMsg = document.getElementById('welcome-msg');
-    const balanceBox = document.getElementById('balance-box');
-    const activityList = document.getElementById('activity-list');
-
-    loginBtn.addEventListener('click', () => {
-      console.log('Login button clicked');
-      const name = nameInput.value.trim().toLowerCase();
-      const pin = pinInput.value.trim();
-      if (!name || !pin) { console.log('Missing name or pin'); return; }
-      db.ref(name).once('value')
-        .then(snapshot => {
-          const data = snapshot.val();
-          console.log('Fetched data:', data);
-          if (!data || data['child-passcode'] !== pin) {
-            errorMsg.style.display = 'block';
-            return;
-          }
-          errorMsg.style.display = 'none';
-          loginSection.classList.remove('active');
-          dashboard.classList.add('active');
-          signoutBtn.style.display = 'block';
-
-          welcomeMsg.textContent = `👋 Welcome ${data['child-name']} to Sterlo`;
-
-          const txns = data['child-transactions'] || [];
-          let balance = 0;
-          activityList.innerHTML = '';
-          txns.forEach(tx => {
-            const li = document.createElement('li');
-            const amt = (tx.type === 'add' ? 1 : -1) * parseFloat(tx.amount);
-            balance += amt;
-            li.textContent = `${tx.type === 'add' ? '+' : '-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
-            activityList.appendChild(li);
-          });
-          balanceBox.innerHTML = `💷 Current Balance<br><strong>£${balance.toFixed(2)}</strong>`;
-        })
-        .catch(err => console.error('Firebase error:', err));
-    });
-    signoutBtn.addEventListener('click', () => {
-      dashboard.classList.remove('active');
-      loginSection.classList.add('active');
-      signoutBtn.style.display = 'none';
-      nameInput.value = '';
-      pinInput.value = '';
-      activityList.innerHTML = '';
-      balanceBox.innerHTML = '💷 Current Balance<br><strong>£0.00</strong>';
-    });
+    // 2. Fetch all data under 'accounts'
+    const output = document.getElementById('output');
+    db.ref('accounts').once('value')
+      .then(snapshot => {
+        const data = snapshot.val();
+        output.textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(err => {
+        output.textContent = 'Error fetching data: ' + err;
+        console.error(err);
+      });
   </script>
 </body>
 </html>
