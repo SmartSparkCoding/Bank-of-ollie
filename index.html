@@ -24,27 +24,10 @@
     .options { display: flex; gap: 0.5rem; margin-top: 2rem; }
     .option-btn { flex: 1; background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 0.8rem; font-size: 1rem; font-weight: 500; color: #2f3542; cursor: pointer; transition: all 0.3s ease; }
     .option-btn:hover { background: #dfe4ea; color: #1e90ff; }
-    /* Modal styles remain unchanged */
   </style>
-  <!-- Firebase SDK Modules -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
-      authDomain: "sterlo-kids-banking.firebaseapp.com",
-      projectId: "sterlo-kids-banking",
-      storageBucket: "sterlo-kids-banking.firebasestorage.app",
-      messagingSenderId: "39217932124",
-      appId: "1:39217932124:web:7d612941b31ceca74a8399",
-      databaseURL: "https://sterlo-kids-banking-default-rtdb.europe-west1.firebasedatabase.app/"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    window.sterloDb = db; // expose for inline script
-  </script>
+  <!-- Firebase Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
   <header>🏛️ Sterlo Banking<button id="signout-btn">Sign Out</button></header>
@@ -74,7 +57,19 @@
   <!-- Existing modals unchanged -->
 
   <script>
-    import { ref, get } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
+      authDomain: "sterlo-kids-banking.firebaseapp.com",
+      projectId: "sterlo-kids-banking",
+      storageBucket: "sterlo-kids-banking.firebasestorage.app",
+      messagingSenderId: "39217932124",
+      appId: "1:39217932124:web:7d612941b31ceca74a8399",
+      databaseURL: "https://sterlo-kids-banking-default-rtdb.europe-west1.firebasedatabase.app/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     // Elements
     const loginSection = document.getElementById('login-section');
     const dashboard = document.getElementById('dashboard');
@@ -87,42 +82,42 @@
     const balanceBox = document.getElementById('balance-box');
     const activityList = document.getElementById('activity-list');
 
-    loginBtn.addEventListener('click', async () => {
+    loginBtn.addEventListener('click', () => {
       const name = nameInput.value.trim().toLowerCase();
       const pin = pinInput.value.trim();
       if (!name || !pin) return;
-      // fetch data
-      try {
-        const snapshot = await get(ref(window.sterloDb, 'accounts/' + name));
-        const data = snapshot.val();
-        if (!data || data['child-passcode'] !== pin) {
+      db.ref('accounts/' + name).once('value')
+        .then(snapshot => {
+          const data = snapshot.val();
+          if (!data || data['child-passcode'] !== pin) {
+            errorMsg.style.display = 'block';
+            return;
+          }
+          // Success
+          errorMsg.style.display = 'none';
+          loginSection.classList.remove('active');
+          dashboard.classList.add('active');
+          signoutBtn.style.display = 'block';
+          welcomeMsg.textContent = `👋 Welcome ${data['child-name']} to Sterlo`;
+          // Build transactions
+          let balance = 0;
+          activityList.innerHTML = '';
+          const txns = data['child-transactions'] || [];
+          txns.forEach(tx => {
+            const li = document.createElement('li');
+            const amt = (tx.type === 'add' ? 1 : -1) * parseFloat(tx.amount);
+            balance += amt;
+            li.textContent = `${tx.type === 'add' ? '+' : '-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
+            activityList.appendChild(li);
+          });
+          balanceBox.innerHTML = `💷 Current Balance<br><strong>£${balance.toFixed(2)}</strong>`;
+        })
+        .catch(err => {
+          console.error(err);
           errorMsg.style.display = 'block';
-          return;
-        }
-        errorMsg.style.display = 'none';
-        // show dashboard
-        loginSection.classList.remove('active');
-        dashboard.classList.add('active');
-        signoutBtn.style.display = 'block';
-        // set welcome
-        welcomeMsg.textContent = `👋 Welcome ${data['child-name']} to Sterlo`;
-        // transactions
-        const txns = data['child-transactions'] || [];
-        let balance = 0;
-        activityList.innerHTML = '';
-        txns.forEach(tx => {
-          const li = document.createElement('li');
-          const amt = (tx.type === 'add' ? 1 : -1) * parseFloat(tx.amount);
-          balance += amt;
-          li.textContent = `${tx.type === 'add' ? '+' : '-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
-          activityList.appendChild(li);
         });
-        balanceBox.innerHTML = `💷 Current Balance<br><strong>£${balance.toFixed(2)}</strong>`;
-      } catch (err) {
-        console.error(err);
-        errorMsg.style.display = 'block';
-      }
     });
+
     signoutBtn.addEventListener('click', () => {
       dashboard.classList.remove('active');
       loginSection.classList.add('active');
