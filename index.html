@@ -9,50 +9,43 @@
     h1 { color: #333; }
     pre { background: #eee; padding: 1rem; border-radius: 6px; overflow: auto; }
   </style>
-  <!-- Firebase compat SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
   <h1>Firebase Connectivity Test</h1>
-  <p>Open browser console to see debug logs.</p>
+  <p>Data from Firebase will appear below:</p>
   <pre id="output">Initializing...</pre>
 
-  <script>
-    window.onload = function() {
-      const output = document.getElementById('output');
-      try {
-        // 1. Initialize Firebase
-        const firebaseConfig = {
-          apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
-          authDomain: "sterlo-kids-banking.firebaseapp.com",
-          projectId: "sterlo-kids-banking",
-          storageBucket: "sterlo-kids-banking.firebasestorage.app",
-          messagingSenderId: "39217932124",
-          appId: "1:39217932124:web:7d612941b31ceca74a8399",
-          databaseURL: "https://sterlo-kids-banking-default-rtdb.firebaseio.com"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        console.log('Firebase DB object:', db);
-        output.textContent = 'Firebase initialized. Fetching data...';
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-        // 2. Fetch root data
-        db.ref('/').once('value')
-          .then(snapshot => {
-            const data = snapshot.val();
-            console.log('Fetched root data:', data);
-            output.textContent = JSON.stringify(data, null, 2) || 'No data found.';
-          })
-          .catch(err => {
-            console.error('Error fetching data:', err);
-            output.textContent = 'Error fetching data: ' + err;
-          });
-      } catch (err) {
-        console.error('Initialization error:', err);
-        output.textContent = 'Initialization error: ' + err;
-      }
+    const output = document.getElementById('output');
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
+      authDomain: "sterlo-kids-banking.firebaseapp.com",
+      projectId: "sterlo-kids-banking",
+      storageBucket: "sterlo-kids-banking.firebasestorage.app",
+      messagingSenderId: "39217932124",
+      appId: "1:39217932124:web:7d612941b31ceca74a8399",
+      databaseURL: "https://sterlo-kids-banking-default-rtdb.firebaseio.com"
     };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      output.textContent = 'Initialized, listening for data...';
+
+      // Listen to root data
+      onValue(ref(db, '/'), (snapshot) => {
+        const data = snapshot.val();
+        output.textContent = JSON.stringify(data, null, 2) || 'No data found.';
+      }, (error) => {
+        output.textContent = 'Error: ' + error.message;
+      });
+    } catch (e) {
+      output.textContent = 'Initialization error: ' + e.message;
+    }
   </script>
 </body>
 </html>
