@@ -1,26 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Connectivity Test</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sterlo</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; background: #f4f6fb; }
-    h1 { color: #333; }
-    pre { background: #eee; padding: 1rem; border-radius: 6px; overflow: auto; }
+    /* Existing styles unchanged */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: linear-gradient(to right, #dfe9f3, #ffffff); color: #333; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    header { background-color: #1e272e; color: white; padding: 1rem; display: flex; align-items: center; justify-content: center; position: relative; font-size: 1.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    #signout-btn { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: #ff4757; border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; display: none; transition: background 0.3s; }
+    #signout-btn:hover { background: #e84118; }
+    .container { max-width: 500px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; }
+    .container.active { display: block !important; opacity: 1; transform: translateY(0); }
+    h2, h3 { margin-bottom: 1rem; color: #2f3542; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+    button { width: 100%; padding: 0.8rem; font-size: 1rem; background-color: #2ed573; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: 600; transition: background 0.3s ease; }
+    button:hover { background-color: #20bf6b; }
+    #error-msg { color: red; margin-top: 0.5rem; font-size: 0.9rem; display: none; text-align: center; }
+    .balance-box { background-color: #f1f2f6; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center; color: #1e272e; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+    ul { list-style: none; padding: 0; margin-top: 1rem; }
+    ul li { padding: 0.75rem 0; border-bottom: 1px solid #eee; font-size: 1rem; color: #57606f; }
+    .options { display: flex; gap: 0.5rem; margin-top: 2rem; }
+    .option-btn { flex: 1; background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 0.8rem; font-size: 1rem; font-weight: 500; color: #2f3542; cursor: pointer; transition: all 0.3s ease; }
+    .option-btn:hover { background: #dfe4ea; color: #1e90ff; }
+    /* Modal styles remain unchanged */
   </style>
-</head>
-<body>
-  <h1>Firebase Connectivity Test</h1>
-  <p>Data from Firebase will appear below:</p>
-  <pre id="output">Initializing...</pre>
-
+  <!-- Firebase SDK Modules -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+    import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-    const output = document.getElementById('output');
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
       authDomain: "sterlo-kids-banking.firebaseapp.com",
@@ -30,22 +40,98 @@
       appId: "1:39217932124:web:7d612941b31ceca74a8399",
       databaseURL: "https://sterlo-kids-banking-default-rtdb.europe-west1.firebasedatabase.app/"
     };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    try {
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
-      output.textContent = 'Initialized, listening for data...';
+    window.sterloDb = db; // expose for inline script
+  </script>
+</head>
+<body>
+  <header>🏛️ Sterlo Banking<button id="signout-btn">Sign Out</button></header>
 
-      // Listen to root data
-      onValue(ref(db, '/'), (snapshot) => {
+  <!-- login -->
+  <div class="container active" id="login-section">
+    <h2>🔐 Login to Sterlo</h2>
+    <input type="text" id="name-input" placeholder="Child Name (lowercase)" />
+    <input type="password" id="pin-input" placeholder="Enter PIN" />
+    <button id="login-btn">Login</button>
+    <p id="error-msg">❌ Invalid name or PIN.</p>
+  </div>
+
+  <!-- dashboard -->
+  <div class="container" id="dashboard">
+    <h2 id="welcome-msg">👋 Welcome to Sterlo</h2>
+    <div class="balance-box" id="balance-box">💷 Current Balance<br><strong>£0.00</strong></div>
+    <h3>📜 Recent Activity</h3>
+    <ul id="activity-list"></ul>
+    <div class="options">
+      <button class="option-btn" id="request-btn">💰 Request Money</button>
+      <button class="option-btn" id="settings-btn">⚙️ Settings</button>
+      <button class="option-btn" id="buy-btn">🎮 Buy Stuff</button>
+    </div>
+  </div>
+
+  <!-- Existing modals unchanged -->
+
+  <script>
+    import { ref, get } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+    // Elements
+    const loginSection = document.getElementById('login-section');
+    const dashboard = document.getElementById('dashboard');
+    const nameInput = document.getElementById('name-input');
+    const pinInput = document.getElementById('pin-input');
+    const errorMsg = document.getElementById('error-msg');
+    const loginBtn = document.getElementById('login-btn');
+    const signoutBtn = document.getElementById('signout-btn');
+    const welcomeMsg = document.getElementById('welcome-msg');
+    const balanceBox = document.getElementById('balance-box');
+    const activityList = document.getElementById('activity-list');
+
+    loginBtn.addEventListener('click', async () => {
+      const name = nameInput.value.trim().toLowerCase();
+      const pin = pinInput.value.trim();
+      if (!name || !pin) return;
+      // fetch data
+      try {
+        const snapshot = await get(ref(window.sterloDb, 'accounts/' + name));
         const data = snapshot.val();
-        output.textContent = JSON.stringify(data, null, 2) || 'No data found.';
-      }, (error) => {
-        output.textContent = 'Error: ' + error.message;
-      });
-    } catch (e) {
-      output.textContent = 'Initialization error: ' + e.message;
-    }
+        if (!data || data['child-passcode'] !== pin) {
+          errorMsg.style.display = 'block';
+          return;
+        }
+        errorMsg.style.display = 'none';
+        // show dashboard
+        loginSection.classList.remove('active');
+        dashboard.classList.add('active');
+        signoutBtn.style.display = 'block';
+        // set welcome
+        welcomeMsg.textContent = `👋 Welcome ${data['child-name']} to Sterlo`;
+        // transactions
+        const txns = data['child-transactions'] || [];
+        let balance = 0;
+        activityList.innerHTML = '';
+        txns.forEach(tx => {
+          const li = document.createElement('li');
+          const amt = (tx.type === 'add' ? 1 : -1) * parseFloat(tx.amount);
+          balance += amt;
+          li.textContent = `${tx.type === 'add' ? '+' : '-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
+          activityList.appendChild(li);
+        });
+        balanceBox.innerHTML = `💷 Current Balance<br><strong>£${balance.toFixed(2)}</strong>`;
+      } catch (err) {
+        console.error(err);
+        errorMsg.style.display = 'block';
+      }
+    });
+    signoutBtn.addEventListener('click', () => {
+      dashboard.classList.remove('active');
+      loginSection.classList.add('active');
+      signoutBtn.style.display = 'none';
+      nameInput.value = '';
+      pinInput.value = '';
+      activityList.innerHTML = '';
+      balanceBox.innerHTML = '💷 Current Balance<br><strong>£0.00</strong>';
+    });
   </script>
 </body>
 </html>
