@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sterlo</title>
   <style>
-    /* Styles omitted for brevity; same as before */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: linear-gradient(to right, #dfe9f3, #ffffff); color: #333; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
     header { background-color: #1e272e; color: white; padding: 1rem; display: flex; align-items: center; justify-content: center; position: relative; font-size: 1.8rem; font-weight: 600; }
@@ -27,6 +26,7 @@
 </head>
 <body>
   <header>🏛️ Sterlo Banking<button id="signout-btn">Sign Out</button></header>
+
   <div class="container active" id="login-section">
     <h2>🔐 Login to Sterlo</h2>
     <input type="text" id="name-input" placeholder="Enter your name" />
@@ -34,6 +34,7 @@
     <button id="login-btn">Login</button>
     <p id="error-msg">❌ Invalid name or PIN.</p>
   </div>
+
   <div class="container" id="dashboard">
     <h2 id="welcome-msg">👋 Welcome to Sterlo</h2>
     <div class="balance-box" id="balance-box">💷 Current Balance<br><strong>£0.00</strong></div>
@@ -45,9 +46,18 @@
       <button class="option-btn" id="buy-btn">🎮 Buy Stuff</button>
     </div>
   </div>
+
   <script>
-    // firebase config
-    const firebaseConfig = { apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU", authDomain: "sterlo-kids-banking.firebaseapp.com", projectId: "sterlo-kids-banking", storageBucket: "sterlo-kids-banking.firebasestorage.app", messagingSenderId: "39217932124", appId: "1:39217932124:web:7d612941b31ceca74a8399", databaseURL: "https://sterlo-kids-banking-default-rtdb.firebaseio.com" };
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBScWHzOdNYO5JcZogiRpSiYu1-YnJ-GMU",
+      authDomain: "sterlo-kids-banking.firebaseapp.com",
+      projectId: "sterlo-kids-banking",
+      storageBucket: "sterlo-kids-banking.firebasestorage.app",
+      messagingSenderId: "39217932124",
+      appId: "1:39217932124:web:7d612941b31ceca74a8399",
+      databaseURL: "https://sterlo-kids-banking-default-rtdb.firebaseio.com"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -63,12 +73,14 @@
     const activityList = document.getElementById('activity-list');
 
     loginBtn.addEventListener('click', () => {
+      console.log('Login button clicked');
       const name = nameInput.value.trim().toLowerCase();
       const pin = pinInput.value.trim();
-      if (!name || !pin) return;
-      db.ref('accounts/' + name).once('value')
+      if (!name || !pin) { console.log('Missing name or pin'); return; }
+      db.ref(name).once('value')
         .then(snapshot => {
           const data = snapshot.val();
+          console.log('Fetched data:', data);
           if (!data || data['child-passcode'] !== pin) {
             errorMsg.style.display = 'block';
             return;
@@ -81,25 +93,27 @@
           welcomeMsg.textContent = `👋 Welcome ${data['child-name']} to Sterlo`;
 
           const txns = data['child-transactions'] || [];
-          let balance=0;
+          let balance = 0;
           activityList.innerHTML = '';
           txns.forEach(tx => {
-            const li=document.createElement('li');
-            const amt = (tx.type==='add'?1:-1)*parseFloat(tx.amount);
-            balance+=amt;
-            li.textContent = `${tx.type==='add'?'+':'-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
+            const li = document.createElement('li');
+            const amt = (tx.type === 'add' ? 1 : -1) * parseFloat(tx.amount);
+            balance += amt;
+            li.textContent = `${tx.type === 'add' ? '+' : '-'}£${Math.abs(tx.amount).toFixed(2)} – ${tx.date}`;
             activityList.appendChild(li);
           });
           balanceBox.innerHTML = `💷 Current Balance<br><strong>£${balance.toFixed(2)}</strong>`;
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error('Firebase error:', err));
     });
     signoutBtn.addEventListener('click', () => {
       dashboard.classList.remove('active');
       loginSection.classList.add('active');
-      signoutBtn.style.display='none';
-      nameInput.value=''; pinInput.value='';
-      activityList.innerHTML=''; balanceBox.innerHTML='💷 Current Balance<br><strong>£0.00</strong>';
+      signoutBtn.style.display = 'none';
+      nameInput.value = '';
+      pinInput.value = '';
+      activityList.innerHTML = '';
+      balanceBox.innerHTML = '💷 Current Balance<br><strong>£0.00</strong>';
     });
   </script>
 </body>
